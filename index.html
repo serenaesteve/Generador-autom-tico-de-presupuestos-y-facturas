@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>s.docu — Generador</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:#f3f1ff;color:#111;min-height:100vh}
+
+.nav{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;background:#fff;border-bottom:1.5px solid #e5e0ff;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.brand-icon{width:30px;height:30px;background:#6C63FF;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:15px;height:15px;fill:white}
+.brand-name{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:#111}
+.brand-name span{color:#6C63FF}
+
+.pills{display:flex;gap:5px;background:#ede9ff;padding:4px;border-radius:50px}
+.pill{padding:6px 18px;border:none;background:transparent;border-radius:50px;font-size:12px;font-weight:500;color:#7a72cc;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all 0.15s;white-space:nowrap}
+.pill.active{background:#6C63FF;color:#fff;font-weight:700}
+
+.nav-right{display:flex;align-items:center;gap:10px}
+.user-badge{font-size:12px;font-weight:600;color:#6C63FF;background:#ede9ff;padding:5px 14px;border-radius:50px;display:flex;align-items:center;gap:6px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-dot{width:7px;height:7px;background:#00B894;border-radius:50%;flex-shrink:0}
+.logout-btn{font-size:12px;font-weight:600;color:#E24B4A;background:none;border:1.5px solid #ffdddd;border-radius:50px;padding:5px 14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all 0.15s;white-space:nowrap}
+.logout-btn:hover{background:#fff0f0}
+
+.layout{display:grid;grid-template-columns:390px 1fr;height:calc(100vh - 58px)}
+
+/* SIDEBAR */
+.sidebar{background:#fff;border-right:1.5px solid #e5e0ff;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:13px}
+.block{background:#faf9ff;border:1.5px solid #e5e0ff;border-radius:16px;padding:14px}
+.block-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#6C63FF;margin-bottom:10px}
+.fields{display:flex;flex-direction:column;gap:8px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:11px;font-weight:500;color:#666}
+.field input,.field select,.field textarea{
+  font-family:'Space Grotesk',sans-serif;font-size:12px;padding:7px 10px;
+  border:1.5px solid #e5e0ff;border-radius:10px;
+  background:#fff;color:#111;outline:none;transition:border 0.15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#6C63FF;box-shadow:0 0 0 3px rgba(108,99,255,0.08)}
+.field textarea{resize:vertical;min-height:60px}
+
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{text-align:left;padding:5px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#aaa;border-bottom:1.5px solid #e5e0ff}
+.tbl td{padding:3px 3px;vertical-align:middle}
+.tbl td input{width:100%;font-family:'Space Grotesk',sans-serif;font-size:11px;padding:5px 6px;border:1.5px solid transparent;border-radius:8px;background:#fff;color:#111;outline:none;transition:border 0.15s}
+.tbl td input:focus{border-color:#6C63FF}
+.btn-add{display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:700;color:#6C63FF;background:transparent;border:1.5px dashed #6C63FF;border-radius:10px;padding:7px;cursor:pointer;font-family:'Space Grotesk',sans-serif;width:100%;margin-top:6px;transition:background 0.15s}
+.btn-add:hover{background:rgba(108,99,255,0.07)}
+.btn-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:17px;padding:0 3px;line-height:1;transition:color 0.15s}
+.btn-del:hover{color:#E24B4A}
+
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+.swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform 0.15s}
+.swatch:hover{transform:scale(1.2)}
+.swatch.on{border-color:#111}
+
+/* PREVIEW */
+.preview{background:#edeaff;overflow-y:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.actions{display:flex;gap:8px;justify-content:flex-end;width:100%;max-width:680px}
+.btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:9px 20px;border-radius:50px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all 0.15s;border:none}
+.btn-primary{background:#6C63FF;color:#fff}
+.btn-primary:hover{background:#5a52e0;transform:translateY(-1px)}
+.btn-ghost{background:#fff;color:#111;border:1.5px solid rgba(108,99,255,0.3)}
+.btn-ghost:hover{background:#faf9ff}
+
+.doc-wrap{width:100%;max-width:680px;background:#fff;border-radius:20px;overflow:hidden;color:#111;font-family:'Space Grotesk',sans-serif;box-shadow:0 8px 48px rgba(108,99,255,0.15)}
+
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:0.05em}
+.st-pending{background:#FFF0E0;color:#B06000}
+.st-paid{background:#E0F7EE;color:#0B7B4A}
+.st-overdue{background:#FFE5E5;color:#C0392B}
+
+@media print{
+  .nav,.sidebar,.actions{display:none!important}
+  .layout{display:block;height:auto}
+  .preview{padding:0;background:white}
+  .doc-wrap{box-shadow:none;max-width:100%;border-radius:0}
+  body{background:white}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="login.html">
+    <div class="brand-icon"><svg viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5" rx="1.5"/><rect x="8" y="1" width="5" height="5" rx="1.5"/><rect x="1" y="8" width="5" height="5" rx="1.5"/><rect x="8" y="8" width="5" height="5" rx="1.5"/></svg></div>
+    <div class="brand-name">s<span>.docu</span></div>
+  </a>
+
+  <div class="pills" id="pills">
+    <button class="pill active" data-t="presupuesto">Presupuesto</button>
+    <button class="pill" data-t="factura">Factura</button>
+    <button class="pill" data-t="albaran">Albarán</button>
+    <button class="pill" data-t="contrato">Contrato</button>
+  </div>
+
+  <div class="nav-right">
+    <div class="user-badge"><div class="user-dot"></div><span id="userLabel">—</span></div>
+    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+
+    <div class="block">
+      <div class="block-label">Tu empresa</div>
+      <div class="fields">
+        <div class="row2">
+          <div class="field"><label>Empresa</label><input id="cName"/></div>
+          <div class="field"><label>NIF / CIF</label><input id="cNif" value="B-12345678"/></div>
+        </div>
+        <div class="field"><label>Dirección</label><input id="cAddr" value="Calle Fuencarral 80, 2º, 28004 Madrid"/></div>
+        <div class="row2">
+          <div class="field"><label>Teléfono</label><input id="cPhone" value="+34 91 000 11 22"/></div>
+          <div class="field"><label>Email</label><input id="cEmail"/></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Web</label><input id="cWeb"/></div>
+          <div class="field"><label>IBAN</label><input id="cIban" value="ES12 3456 7890 1234"/></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Cliente</div>
+      <div class="fields">
+        <div class="row2">
+          <div class="field"><label>Nombre / empresa</label><input id="clName" value="Tech Startup SL"/></div>
+          <div class="field"><label>NIF / CIF</label><input id="clNif" value="B-98765432"/></div>
+        </div>
+        <div class="field"><label>Dirección</label><input id="clAddr" value="Paseo de la Castellana 100, Madrid"/></div>
+        <div class="row2">
+          <div class="field"><label>Teléfono</label><input id="clPhone" value="+34 91 999 88 77"/></div>
+          <div class="field"><label>Email</label><input id="clEmail" value="cfo@techstartup.es"/></div>
+        </div>
+        <div class="field"><label>Persona de contacto</label><input id="clContact" value="María García López"/></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Datos del documento</div>
+      <div class="fields">
+        <div class="row2">
+          <div class="field"><label>Número</label><input id="dNum" value="DOC-0042"/></div>
+          <div class="field"><label>Fecha emisión</label><input id="dDate" type="date"/></div>
+        </div>
+        <div class="row2">
+          <div class="field" id="fValid"><label>Válido hasta</label><input id="dValid" type="date"/></div>
+          <div class="field" id="fDue" style="display:none"><label>Vencimiento</label><input id="dDue" type="date"/></div>
+        </div>
+        <div class="field" id="fStatus" style="display:none">
+          <label>Estado</label>
+          <select id="dStatus">
+            <option value="pending">Pendiente de pago</option>
+            <option value="paid">Pagada</option>
+            <option value="overdue">Vencida</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Forma de pago</label>
+          <select id="payMethod">
+            <option>Transferencia bancaria</option>
+            <option>Tarjeta / TPV</option>
+            <option>Efectivo</option>
+            <option>Domiciliación bancaria</option>
+            <option>Cheque</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Líneas / Conceptos</div>
+      <table class="tbl">
+        <thead><tr>
+          <th style="width:38%">Concepto</th>
+          <th style="width:12%">Cant.</th>
+          <th style="width:20%">Precio €</th>
+          <th style="width:13%">IVA %</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <button class="btn-add" onclick="addItem()">+ añadir línea</button>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Ajustes fiscales</div>
+      <div class="fields">
+        <div class="row2">
+          <div class="field"><label>IRPF (%)</label><input id="irpf" type="number" value="0" min="0" max="50" step="0.5"/></div>
+          <div class="field"><label>Descuento (%)</label><input id="disc" type="number" value="0" min="0" max="100"/></div>
+        </div>
+        <div class="field">
+          <label>Moneda</label>
+          <select id="currency">
+            <option value="EUR">Euro (€)</option>
+            <option value="USD">Dólar (USD)</option>
+            <option value="GBP">Libra (GBP)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Notas y condiciones</div>
+      <div class="field">
+        <textarea id="notes" rows="4">Pago por transferencia bancaria al IBAN indicado en un plazo de 30 días desde la fecha de emisión.</textarea>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Color del documento</div>
+      <div class="swatches" id="swatches">
+        <div class="swatch on" data-c="#6C63FF" style="background:#6C63FF" title="Violeta"></div>
+        <div class="swatch" data-c="#FF6584" style="background:#FF6584" title="Rosa"></div>
+        <div class="swatch" data-c="#00B894" style="background:#00B894" title="Esmeralda"></div>
+        <div class="swatch" data-c="#FDCB6E" style="background:#FDCB6E" title="Amarillo"></div>
+        <div class="swatch" data-c="#E17055" style="background:#E17055" title="Naranja"></div>
+        <div class="swatch" data-c="#0984E3" style="background:#0984E3" title="Azul"></div>
+        <div class="swatch" data-c="#D4537E" style="background:#D4537E" title="Fucsia"></div>
+        <div class="swatch" data-c="#2D3436" style="background:#2D3436" title="Carbón"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="preview">
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="newDoc()">Nuevo</button>
+      <button class="btn btn-ghost" onclick="window.print()">Imprimir</button>
+      <button class="btn btn-primary" onclick="exportPDF()">Descargar PDF ↓</button>
+    </div>
+    <div class="doc-wrap" id="docOut"></div>
+  </div>
+</div>
+
+<script>
+/* Protección de ruta */
+var currentUser = sessionStorage.getItem('sdocu_user');
+if(!currentUser){ window.location.href='login.html'; }
+
+var nombre = sessionStorage.getItem('sdocu_nombre') || currentUser;
+var empresa = sessionStorage.getItem('sdocu_empresa') || '';
+document.getElementById('userLabel').textContent = nombre;
+
+/* Pre-rellenar empresa del usuario */
+if(empresa){ document.getElementById('cName').value = empresa; }
+if(currentUser){ document.getElementById('cEmail').value = currentUser; }
+
+function doLogout(){
+  sessionStorage.removeItem('sdocu_user');
+  sessionStorage.removeItem('sdocu_nombre');
+  sessionStorage.removeItem('sdocu_empresa');
+  window.location.href='login.html';
+}
+
+/* ─── ESTADO ─── */
+var ac='#6C63FF';
+var dt='presupuesto';
+var items=[
+  {d:'Diseño de identidad visual + branding',q:1,p:2400,v:21},
+  {d:'Campaña redes sociales (pack 3 meses)',q:3,p:600,v:21},
+  {d:'Desarrollo web landing page',q:1,p:1800,v:21}
+];
+var LABELS={presupuesto:'Presupuesto',factura:'Factura',albaran:'Albarán',contrato:'Contrato'};
+var CURR={EUR:'es-ES',USD:'en-US',GBP:'en-GB'};
+
+function gv(id){var e=document.getElementById(id);return e?e.value:'';}
+function fc(n){var c=gv('currency')||'EUR';return new Intl.NumberFormat(CURR[c]||'es-ES',{style:'currency',currency:c}).format(n);}
+function fd(d){if(!d)return'—';var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function initDates(){
+  var t=new Date(),pad=function(n){return String(n).padStart(2,'0');};
+  var ts=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
+  document.getElementById('dDate').value=ts;
+  var v=new Date(t);v.setDate(v.getDate()+30);
+  document.getElementById('dValid').value=v.getFullYear()+'-'+pad(v.getMonth()+1)+'-'+pad(v.getDate());
+  var du=new Date(t);du.setDate(du.getDate()+30);
+  document.getElementById('dDue').value=du.getFullYear()+'-'+pad(du.getMonth()+1)+'-'+pad(du.getDate());
+}
+
+function renderItems(){
+  var h='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    h+='<tr>'
+      +'<td><input value="'+esc(it.d)+'" data-i="'+i+'" data-k="d" onchange="updItem(this)"/></td>'
+      +'<td><input type="number" value="'+it.q+'" min="1" data-i="'+i+'" data-k="q" onchange="updItem(this)"/></td>'
+      +'<td><input type="number" value="'+it.p+'" min="0" step="0.01" data-i="'+i+'" data-k="p" onchange="updItem(this)"/></td>'
+      +'<td><input type="number" value="'+it.v+'" min="0" max="100" data-i="'+i+'" data-k="v" onchange="updItem(this)"/></td>'
+      +'<td><button class="btn-del" onclick="removeItem('+i+')">×</button></td>'
+      +'</tr>';
+  }
+  document.getElementById('itemsBody').innerHTML=h;
+}
+
+function updItem(el){var i=+el.dataset.i,k=el.dataset.k;items[i][k]=(k==='d')?el.value:+el.value;render();}
+function addItem(){items.push({d:'Nuevo concepto',q:1,p:0,v:21});renderItems();render();}
+function removeItem(i){items.splice(i,1);renderItems();render();}
+function newDoc(){items=[{d:'Concepto',q:1,p:0,v:21}];renderItems();render();}
+
+function calcT(){
+  var disc=+gv('disc')/100,ir=+gv('irpf')/100,sub=0,tax=0;
+  for(var i=0;i<items.length;i++){var b=items[i].q*items[i].p*(1-disc);sub+=b;tax+=b*(items[i].v/100);}
+  var irpfA=sub*ir;
+  return{sub:sub,tax:tax,irpfA:irpfA,total:sub+tax-irpfA,disc:disc};
+}
+
+function render(){
+  var t=calcT();
+  var ip=+gv('irpf'),dp=+gv('disc');
+  var stMap={pending:'st-pending',paid:'st-paid',overdue:'st-overdue'};
+  var stLbl={pending:'Pendiente',paid:'Pagada',overdue:'Vencida'};
+  var st=gv('dStatus');
+
+  var rows='';
+  for(var i=0;i<items.length;i++){
+    var it=items[i],b=it.q*it.p*(1-t.disc);
+    rows+='<tr style="border-bottom:1px solid #f0eeff">'
+      +'<td style="padding:9px 10px;font-size:12px;color:#222">'+esc(it.d)+'</td>'
+      +'<td style="padding:9px 10px;font-size:12px;color:#777;text-align:center">'+it.q+'</td>'
+      +'<td style="padding:9px 10px;font-size:12px;color:#777;text-align:right">'+fc(it.p)+'</td>'
+      +'<td style="padding:9px 10px;font-size:12px;color:#777;text-align:right">'+it.v+'%</td>'
+      +'<td style="padding:9px 10px;font-size:12px;font-weight:700;color:#111;text-align:right">'+fc(b)+'</td>'
+      +'</tr>';
+  }
+
+  var metaExtra='';
+  if(dt==='factura') metaExtra='<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.6);margin-bottom:3px">Vencimiento</div><div style="font-size:13px;font-weight:600;color:#fff">'+fd(gv('dDue'))+'</div></div>';
+  else if(dt==='presupuesto') metaExtra='<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.6);margin-bottom:3px">Válido hasta</div><div style="font-size:13px;font-weight:600;color:#fff">'+fd(gv('dValid'))+'</div></div>';
+
+  var statusBadge=dt==='factura'?'<span class="badge '+(stMap[st]||'st-pending')+'">'+(stLbl[st]||'Pendiente')+'</span>':'';
+
+  var contractSig=dt==='contrato'
+    ?'<div style="margin:0 28px 24px;padding:20px;border:1.5px dashed #e0deff;border-radius:14px">'
+      +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:'+ac+';margin-bottom:16px">Firmas</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">'
+      +'<div><div style="font-size:10px;color:#aaa;margin-bottom:28px">FIRMA EMISOR</div><div style="border-top:1.5px solid #ddd;padding-top:6px;font-size:11px;color:#555">'+esc(gv('cName'))+'</div></div>'
+      +'<div><div style="font-size:10px;color:#aaa;margin-bottom:28px">FIRMA CLIENTE</div><div style="border-top:1.5px solid #ddd;padding-top:6px;font-size:11px;color:#555">'+esc(gv('clName'))+'</div></div>'
+      +'</div></div>':'';
+
+  var discRow=dp>0?'<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:#E24B4A;border-bottom:1px solid #f0eeff"><span>Descuento ('+dp+'%)</span><span>-'+fc(t.sub*t.disc/(1-t.disc||0.001))+'</span></div>':'';
+  var irpfRow=ip>0?'<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:#E24B4A;border-bottom:1px solid #f0eeff"><span>IRPF ('+ip+'%)</span><span>-'+fc(t.irpfA)+'</span></div>':'';
+  var payRow='<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:#777;border-bottom:1px solid #f0eeff"><span>Forma de pago</span><span>'+esc(gv('payMethod'))+'</span></div>';
+  var ibanRow=(gv('cIban')&&gv('payMethod')==='Transferencia bancaria')?'<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:#777;border-bottom:1px solid #f0eeff"><span>IBAN</span><span style="font-family:\'Space Mono\',monospace;font-size:10px">'+esc(gv('cIban'))+'</span></div>':'';
+  var notesHtml=gv('notes')?'<div style="margin:0 28px 24px;background:#faf9ff;border-left:3px solid '+ac+';padding:12px 14px;border-radius:0 10px 10px 0;font-size:11px;color:#666;line-height:1.6"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:'+ac+'">Notas</span><br>'+esc(gv('notes'))+'</div>':'';
+
+  document.getElementById('docOut').innerHTML=
+    '<div style="background:'+ac+';padding:28px 28px 24px;position:relative;overflow:hidden">'
+      +'<div style="position:absolute;top:-30px;right:-30px;width:130px;height:130px;background:rgba(255,255,255,0.08);border-radius:50%"></div>'
+      +'<div style="position:absolute;bottom:-25px;left:80px;width:90px;height:90px;background:rgba(255,255,255,0.05);border-radius:50%"></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative">'
+        +'<div>'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+            +'<div style="width:26px;height:26px;background:rgba(255,255,255,0.2);border-radius:7px;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 14 14" fill="white"><rect x="1" y="1" width="5" height="5" rx="1.5"/><rect x="8" y="1" width="5" height="5" rx="1.5"/><rect x="1" y="8" width="5" height="5" rx="1.5"/><rect x="8" y="8" width="5" height="5" rx="1.5"/></svg></div>'
+            +'<span style="font-family:\'Space Mono\',monospace;font-size:12px;font-weight:700;color:rgba(255,255,255,0.8)">s.docu</span>'
+          +'</div>'
+          +'<div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.5px;margin-bottom:5px">'+esc(gv('cName')||'Mi empresa')+'</div>'
+          +'<div style="font-size:11px;color:rgba(255,255,255,0.65);line-height:1.8">'+esc(gv('cAddr'))+'<br>'+esc(gv('cPhone'))+' · '+esc(gv('cEmail'))+'<br>'+esc(gv('cWeb'))+' · NIF: '+esc(gv('cNif'))+'</div>'
+        +'</div>'
+        +'<div style="text-align:right">'
+          +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:rgba(255,255,255,0.55);margin-bottom:5px">'+LABELS[dt]+'</div>'
+          +'<div style="font-family:\'Space Mono\',monospace;font-size:22px;font-weight:700;color:#fff;margin-bottom:8px">#'+esc(gv('dNum'))+'</div>'
+          +statusBadge
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="background:#faf9ff;padding:13px 28px;display:flex;gap:28px;border-bottom:1.5px solid #ede9ff;flex-wrap:wrap">'
+      +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;margin-bottom:2px">Emisión</div><div style="font-size:13px;font-weight:600;color:#222">'+fd(gv('dDate'))+'</div></div>'
+      +metaExtra
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid #ede9ff">'
+      +'<div style="padding:18px 28px;border-right:1.5px solid #ede9ff">'
+        +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:'+ac+';margin-bottom:8px">De</div>'
+        +'<div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">'+esc(gv('cName'))+'</div>'
+        +'<div style="font-size:11px;color:#777;line-height:1.8">'+esc(gv('cAddr'))+'<br>'+esc(gv('cPhone'))+'<br>'+esc(gv('cEmail'))+'<br>NIF: '+esc(gv('cNif'))+'</div>'
+      +'</div>'
+      +'<div style="padding:18px 28px">'
+        +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:'+ac+';margin-bottom:8px">Para</div>'
+        +'<div style="font-size:13px;font-weight:600;color:#111;margin-bottom:4px">'+esc(gv('clName'))+'</div>'
+        +'<div style="font-size:11px;color:#777;line-height:1.8">'+esc(gv('clAddr'))+'<br>'+esc(gv('clPhone'))+'<br>'+esc(gv('clEmail'))+'<br>NIF: '+esc(gv('clNif'))+'</div>'
+        +(gv('clContact')?'<div style="margin-top:4px;font-size:11px;color:#aaa">Att.: '+esc(gv('clContact'))+'</div>':'')
+      +'</div>'
+    +'</div>'
+    +'<div style="padding:0 28px">'
+      +'<table style="width:100%;border-collapse:collapse;font-family:\'Space Grotesk\',sans-serif">'
+        +'<thead><tr style="background:#faf9ff">'
+          +'<th style="padding:10px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aaa;border-bottom:1.5px solid #ede9ff">Concepto</th>'
+          +'<th style="padding:10px 10px;font-size:10px;font-weight:700;text-transform:uppercase;color:#aaa;border-bottom:1.5px solid #ede9ff;text-align:center">Cant.</th>'
+          +'<th style="padding:10px 10px;font-size:10px;font-weight:700;text-transform:uppercase;color:#aaa;border-bottom:1.5px solid #ede9ff;text-align:right">P. Unit.</th>'
+          +'<th style="padding:10px 10px;font-size:10px;font-weight:700;text-transform:uppercase;color:#aaa;border-bottom:1.5px solid #ede9ff;text-align:right">IVA</th>'
+          +'<th style="padding:10px 10px;font-size:10px;font-weight:700;text-transform:uppercase;color:#aaa;border-bottom:1.5px solid #ede9ff;text-align:right">Total</th>'
+        +'</tr></thead>'
+        +'<tbody>'+rows+'</tbody>'
+      +'</table>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:flex-end;padding:16px 28px">'
+      +'<div style="min-width:240px">'
+        +'<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:#777;border-bottom:1px solid #f0eeff"><span>Base imponible</span><span>'+fc(t.sub)+'</span></div>'
+        +discRow
+        +'<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;color:#777;border-bottom:1px solid #f0eeff"><span>IVA</span><span>'+fc(t.tax)+'</span></div>'
+        +irpfRow
+        +payRow
+        +ibanRow
+        +'<div style="display:flex;justify-content:space-between;padding:10px 0 6px;font-size:17px;font-weight:700;color:#111;border-top:2.5px solid '+ac+';margin-top:4px"><span>Total</span><span style="color:'+ac+'">'+fc(t.total)+'</span></div>'
+      +'</div>'
+    +'</div>'
+    +contractSig
+    +notesHtml
+    +'<div style="text-align:center;font-size:10px;color:#bbb;padding:14px 28px;border-top:1.5px solid #ede9ff;font-family:\'Space Mono\',monospace;line-height:1.8">'+esc(gv('cName'))+' · NIF '+esc(gv('cNif'))+' · '+esc(gv('cEmail'))+'<br>generado con s.docu</div>';
+}
+
+function exportPDF(){
+  var content=document.getElementById('docOut').innerHTML;
+  var w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>s.docu — '+LABELS[dt]+' '+gv('dNum')+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Space Grotesk\',sans-serif;background:white}'
+    +'.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:0.05em}'
+    +'.st-pending{background:#FFF0E0;color:#B06000}.st-paid{background:#E0F7EE;color:#0B7B4A}.st-overdue{background:#FFE5E5;color:#C0392B}'
+    +'@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>'
+    +content+'<script>window.onload=function(){window.print();setTimeout(function(){window.close();},600);};<\/script></body></html>');
+  w.document.close();
+}
+
+document.getElementById('pills').addEventListener('click',function(e){
+  var btn=e.target.closest('.pill');
+  if(!btn)return;
+  document.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');
+  dt=btn.getAttribute('data-t');
+  document.getElementById('fValid').style.display=dt==='presupuesto'?'':'none';
+  document.getElementById('fDue').style.display=(dt==='factura'||dt==='albaran')?'':'none';
+  document.getElementById('fStatus').style.display=dt==='factura'?'':'none';
+  render();
+});
+
+document.getElementById('swatches').addEventListener('click',function(e){
+  var sw=e.target.closest('.swatch');
+  if(!sw)return;
+  document.querySelectorAll('.swatch').forEach(function(s){s.classList.remove('on');});
+  sw.classList.add('on');
+  ac=sw.getAttribute('data-c');
+  render();
+});
+
+document.getElementById('sidebar').addEventListener('change',function(){render();});
+document.getElementById('sidebar').addEventListener('input',function(e){
+  if(!e.target.closest('.tbl'))render();
+});
+
+initDates();
+renderItems();
+render();
+</script>
+</body>
+</html>

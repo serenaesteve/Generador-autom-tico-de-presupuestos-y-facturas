@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>s.docu — Acceder</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:#f3f1ff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+
+.bg-shapes{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.shape{position:absolute;border-radius:50%;opacity:0.15}
+.s1{width:450px;height:450px;background:#6C63FF;top:-140px;right:-120px}
+.s2{width:300px;height:300px;background:#FF6584;bottom:-100px;left:-80px}
+.s3{width:200px;height:200px;background:#00B894;bottom:25%;right:5%}
+.s4{width:120px;height:120px;background:#FDCB6E;top:20%;left:5%}
+
+.card{
+  position:relative;z-index:1;
+  background:#fff;border-radius:28px;padding:48px 44px;
+  width:100%;max-width:440px;
+  box-shadow:0 12px 60px rgba(108,99,255,0.18);
+}
+
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:36px}
+.logo-icon{width:38px;height:38px;background:#6C63FF;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:19px;height:19px;fill:white}
+.logo-name{font-family:'Space Mono',monospace;font-size:19px;font-weight:700;color:#111}
+.logo-name span{color:#6C63FF}
+
+/* TABS */
+.tabs{display:flex;background:#f3f1ff;border-radius:14px;padding:4px;margin-bottom:32px;gap:4px}
+.tab{flex:1;padding:10px;border:none;background:transparent;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:#aaa;cursor:pointer;transition:all 0.15s}
+.tab.active{background:#fff;color:#6C63FF;box-shadow:0 2px 8px rgba(108,99,255,0.12)}
+
+.form-section{display:none}
+.form-section.active{display:block}
+
+.title{font-size:22px;font-weight:700;color:#111;margin-bottom:6px;letter-spacing:-0.4px}
+.subtitle{font-size:13px;color:#999;margin-bottom:28px;line-height:1.5}
+
+.alert{display:none;font-size:12px;font-weight:500;border-radius:10px;padding:10px 14px;margin-bottom:18px}
+.alert-err{color:#C0392B;background:#fff0f0;border:1.5px solid #ffcccc}
+.alert-ok{color:#0B7B4A;background:#e6f7f0;border:1.5px solid #b2e8cc}
+
+.label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:6px}
+.input{
+  width:100%;font-family:'Space Grotesk',sans-serif;font-size:14px;
+  padding:12px 16px;border:1.5px solid #e5e0ff;border-radius:12px;
+  background:#faf9ff;color:#111;outline:none;transition:all 0.15s;margin-bottom:16px;
+  display:block;
+}
+.input:focus{border-color:#6C63FF;background:#fff;box-shadow:0 0 0 4px rgba(108,99,255,0.1)}
+.input::placeholder{color:#ccc}
+
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-row .input{margin-bottom:0}
+.input-row-wrap{margin-bottom:16px}
+
+.strength-bar{height:4px;border-radius:4px;background:#f0eeff;margin-top:-10px;margin-bottom:16px;overflow:hidden}
+.strength-fill{height:100%;border-radius:4px;transition:width 0.3s,background 0.3s;width:0%}
+
+.btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all 0.15s;letter-spacing:0.02em;margin-top:4px;
+}
+.btn-primary{background:#6C63FF;color:#fff}
+.btn-primary:hover{background:#5a52e0;transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,0.35)}
+.btn-primary:active{transform:translateY(0)}
+
+.divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#ddd;font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#ede9ff}
+
+.demo-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#bbb;text-align:center;margin-bottom:10px}
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.demo-btn{
+  background:#f3f1ff;color:#6C63FF;border:none;border-radius:10px;padding:9px 6px;
+  font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;text-align:center;line-height:1.4;
+}
+.demo-btn:hover{background:#e8e4ff;transform:translateY(-1px)}
+.demo-btn span{display:block;font-weight:400;color:#aaa;font-size:10px;margin-top:2px}
+
+.footer-note{text-align:center;font-size:11px;color:#ccc;margin-top:24px}
+
+.pass-hint{font-size:11px;color:#aaa;margin-top:-10px;margin-bottom:14px}
+
+/* Checkbox */
+.check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+.check-row input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:#6C63FF;cursor:pointer;flex-shrink:0}
+.check-row label{font-size:12px;color:#888;cursor:pointer;line-height:1.5}
+.check-row label span{color:#6C63FF;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="bg-shapes">
+  <div class="shape s1"></div>
+  <div class="shape s2"></div>
+  <div class="shape s3"></div>
+  <div class="shape s4"></div>
+</div>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5" rx="1.5"/><rect x="8" y="1" width="5" height="5" rx="1.5"/><rect x="1" y="8" width="5" height="5" rx="1.5"/><rect x="8" y="8" width="5" height="5" rx="1.5"/></svg>
+    </div>
+    <div class="logo-name">s<span>.docu</span></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('login')">Iniciar sesión</button>
+    <button class="tab" onclick="switchTab('register')">Crear cuenta</button>
+  </div>
+
+  <!-- ── LOGIN ── -->
+  <div class="form-section active" id="sec-login">
+    <div class="title">Bienvenido de vuelta</div>
+    <div class="subtitle">Accede para generar tus presupuestos y facturas</div>
+
+    <div class="alert alert-err" id="login-err">Usuario o contraseña incorrectos.</div>
+
+    <label class="label">Usuario</label>
+    <input class="input" id="l-user" type="text" placeholder="tu@email.com" autocomplete="username"/>
+
+    <label class="label">Contraseña</label>
+    <input class="input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+
+    <button class="btn btn-primary" onclick="doLogin()">Entrar →</button>
+
+    <div class="divider">acceso demo rápido</div>
+    <div class="demo-title">Haz clic para rellenar</div>
+    <div class="demo-grid">
+      <button class="demo-btn" onclick="fillLogin('admin','admin123')">admin<span>admin123</span></button>
+      <button class="demo-btn" onclick="fillLogin('demo','demo')">demo<span>demo</span></button>
+      <button class="demo-btn" onclick="fillLogin('usuario','1234')">usuario<span>1234</span></button>
+    </div>
+  </div>
+
+  <!-- ── REGISTRO ── -->
+  <div class="form-section" id="sec-register">
+    <div class="title">Crear cuenta</div>
+    <div class="subtitle">Únete a s.docu y empieza a generar documentos profesionales</div>
+
+    <div class="alert alert-err" id="reg-err"></div>
+    <div class="alert alert-ok" id="reg-ok"></div>
+
+    <div class="input-row-wrap">
+      <div class="input-row">
+        <div>
+          <label class="label">Nombre</label>
+          <input class="input" id="r-nombre" type="text" placeholder="María"/>
+        </div>
+        <div>
+          <label class="label">Apellido</label>
+          <input class="input" id="r-apellido" type="text" placeholder="García"/>
+        </div>
+      </div>
+    </div>
+
+    <label class="label">Email / Usuario</label>
+    <input class="input" id="r-user" type="email" placeholder="maria@empresa.es" autocomplete="email"/>
+
+    <label class="label">Empresa (opcional)</label>
+    <input class="input" id="r-empresa" type="text" placeholder="Mi empresa SL"/>
+
+    <label class="label">Contraseña</label>
+    <input class="input" id="r-pass" type="password" placeholder="Mínimo 6 caracteres" oninput="checkStrength(this.value)" autocomplete="new-password"/>
+    <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+    <div class="pass-hint" id="pass-hint">Escribe tu contraseña</div>
+
+    <label class="label">Repetir contraseña</label>
+    <input class="input" id="r-pass2" type="password" placeholder="Repite la contraseña" autocomplete="new-password"/>
+
+    <div class="check-row">
+      <input type="checkbox" id="r-terms"/>
+      <label for="r-terms">Acepto los <span>términos y condiciones</span> y la <span>política de privacidad</span> de s.docu</label>
+    </div>
+
+    <button class="btn btn-primary" onclick="doRegister()">Crear cuenta →</button>
+  </div>
+
+  <div class="footer-note">s.docu v1.0 — Generador de documentos empresariales</div>
+</div>
+
+<script>
+/* Usuarios por defecto */
+var DEFAULT_USERS = {
+  'admin':   {pass:'admin123', nombre:'Admin',   empresa:'s.docu'},
+  'demo':    {pass:'demo',     nombre:'Demo',     empresa:'Demo SL'},
+  'usuario': {pass:'1234',     nombre:'Usuario',  empresa:'Mi empresa'}
+};
+
+function getUsers(){
+  try{ return JSON.parse(localStorage.getItem('sdocu_users')||'null') || DEFAULT_USERS; }
+  catch(e){ return DEFAULT_USERS; }
+}
+
+function saveUsers(u){ localStorage.setItem('sdocu_users', JSON.stringify(u)); }
+
+/* Si ya hay sesión, ir a la app */
+if(sessionStorage.getItem('sdocu_user')){ window.location.href='index.html'; }
+
+/* TABS */
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(function(b,i){b.classList.toggle('active', (t==='login'&&i===0)||(t==='register'&&i===1));});
+  document.getElementById('sec-login').classList.toggle('active', t==='login');
+  document.getElementById('sec-register').classList.toggle('active', t==='register');
+}
+
+/* DEMO FILL */
+function fillLogin(u,p){
+  document.getElementById('l-user').value=u;
+  document.getElementById('l-pass').value=p;
+}
+
+/* LOGIN */
+function doLogin(){
+  var u=document.getElementById('l-user').value.trim();
+  var p=document.getElementById('l-pass').value;
+  var err=document.getElementById('login-err');
+  var users=getUsers();
+  if(users[u]&&users[u].pass===p){
+    err.style.display='none';
+    sessionStorage.setItem('sdocu_user', u);
+    sessionStorage.setItem('sdocu_nombre', users[u].nombre||u);
+    sessionStorage.setItem('sdocu_empresa', users[u].empresa||'');
+    window.location.href='index.html';
+  } else {
+    err.style.display='block';
+    document.getElementById('l-pass').value='';
+  }
+}
+
+/* STRENGTH */
+function checkStrength(v){
+  var score=0;
+  if(v.length>=6)score++;
+  if(v.length>=10)score++;
+  if(/[A-Z]/.test(v))score++;
+  if(/[0-9]/.test(v))score++;
+  if(/[^A-Za-z0-9]/.test(v))score++;
+  var colors=['#E24B4A','#E17055','#FDCB6E','#00B894','#0984E3'];
+  var labels=['Muy débil','Débil','Regular','Buena','Excelente'];
+  var pct=[20,40,60,80,100];
+  var fill=document.getElementById('strength-fill');
+  var hint=document.getElementById('pass-hint');
+  var idx=Math.max(0,Math.min(score-1,4));
+  if(v.length===0){fill.style.width='0%';hint.textContent='Escribe tu contraseña';hint.style.color='#aaa';return;}
+  fill.style.width=pct[idx]+'%';
+  fill.style.background=colors[idx];
+  hint.textContent=labels[idx];
+  hint.style.color=colors[idx];
+}
+
+/* REGISTRO */
+function doRegister(){
+  var nombre=document.getElementById('r-nombre').value.trim();
+  var apellido=document.getElementById('r-apellido').value.trim();
+  var user=document.getElementById('r-user').value.trim();
+  var empresa=document.getElementById('r-empresa').value.trim();
+  var pass=document.getElementById('r-pass').value;
+  var pass2=document.getElementById('r-pass2').value;
+  var terms=document.getElementById('r-terms').checked;
+  var err=document.getElementById('reg-err');
+  var ok=document.getElementById('reg-ok');
+  err.style.display='none'; ok.style.display='none';
+
+  if(!nombre||!user||!pass||!pass2){err.textContent='Completa todos los campos obligatorios.';err.style.display='block';return;}
+  if(pass.length<6){err.textContent='La contraseña debe tener al menos 6 caracteres.';err.style.display='block';return;}
+  if(pass!==pass2){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
+  if(!terms){err.textContent='Debes aceptar los términos y condiciones.';err.style.display='block';return;}
+
+  var users=getUsers();
+  if(users[user]){err.textContent='Este usuario ya existe. Prueba con otro email.';err.style.display='block';return;}
+
+  users[user]={pass:pass, nombre:nombre+' '+apellido, empresa:empresa};
+  saveUsers(users);
+
+  ok.textContent='¡Cuenta creada correctamente! Iniciando sesión...';
+  ok.style.display='block';
+
+  setTimeout(function(){
+    sessionStorage.setItem('sdocu_user', user);
+    sessionStorage.setItem('sdocu_nombre', nombre+' '+apellido);
+    sessionStorage.setItem('sdocu_empresa', empresa);
+    window.location.href='index.html';
+  }, 1400);
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    if(document.getElementById('sec-login').classList.contains('active')) doLogin();
+    else doRegister();
+  }
+});
+</script>
+</body>
+</html>
